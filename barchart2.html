@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Simple bar chart 2</title>
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <style>
+            .chart rect{
+                fill: steelblue;
+            }
+            .chart text{
+                fill: white;
+                font: sans-serif;
+                text-anchor: end;                
+            }
+        </style>
+    </head>
+    <body>
+        <svg class="chart"></svg>
+        <script>
+            // svg geometry in attr aesthetics in styles
+            // text element to write text
+            let data =[10,20,30,50,80,30];
+            let width=700,barHeight=20;
+
+            let scale =d3.scaleLinear().domain([0,d3.max(data)]).range([0,500]);
+
+            let chart = d3.select('.chart').attr("width",width).attr("height",barHeight*data.length);
+
+            let bar = chart.selectAll('g')
+                        .data(data)
+                        .enter()
+                        .append('g')
+                        .attr('transform',(d,i)=>{return 'translate(0,'+i*barHeight+')';});
+
+            bar.append('rect')
+                .attr('width',scale).attr('height',barHeight-1);
+            
+            bar.append('text')
+                .attr('x',(d)=>{return scale(d)-5;})
+                .attr('y',barHeight/2)
+                .attr('dy','.40em')
+                .text((d)=>{return d;});
+        </script>
+    </body>
+</html>
