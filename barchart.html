@@ -18,13 +18,25 @@
         <div id="chart"></div>
         <script>
             let data =[10,20,30,50,80,30];
-            
+            // scaleLinear scales the data linearly
+            // domain specifies which the min and max values of data
+            // range gives a corresponding scale 
+            // eg 20 in range [0,100] will be smaller than in [0,1000] range
+            let scale = d3.scaleLinear()
+                    .domain([0,d3.max(data)])
+                    .range([0,500]);
+            // d3 selector to select the chart element 
+            // select all the divs , currently 0
+            // add data to this empty selection
+            // enter the chart and append new div's
+            // the number will be equal to number of data elements
+            // width and text of new div's are dependent on the corresponding data 
             d3.select('#chart')
                 .selectAll('div')
                 .data(data)
                     .enter()
                     .append('div')
-                    .style('width',(d)=>{return d*5+"px";})
+                    .style('width',(d)=>{return scale(d)+"px";})
                     .text((d)=>{return d});
         </script>    
     </body>
