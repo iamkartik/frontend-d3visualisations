@@ -13,45 +13,66 @@
             }
             .chart text{
                 font-family: sans-serif;
-                fill: white;
+                fill: black;
                 text-anchor: middle;
             }
             .chart rect:hover{
                 fill: grey;
+            }
+            .axis--x path{
+                display: none;
             }
         </style>
         </head>
         <body>
             <svg class="chart"></svg>
         <script>
-            let width=960,height=500;
+            let margin={top:20,right:30,bottom:30,left:40}
+
+            let width=1000-margin.left-margin.right,height=500-margin.top-margin.bottom;
 
             let scale = d3.scaleLinear()
-                            .range([height,0]);
+                            .rangeRound([height,0]);
+            let ordinal = d3.scaleBand()
+                            .rangeRound([0,width]);
+
             let chart = d3.select('.chart')
-                            .attr('width',width)
-                            .attr('height',height);
+                            .attr('width',width+margin.left+margin.right)
+                            .attr('height',height+margin.top+margin.bottom)
+                            .append('g')
+                            .attr('transform','translate('+margin.left+','+margin.top+')');
+            let xAxis=d3.axisBottom(ordinal);
+            let yAxis=d3.axisLeft(scale).ticks(10,'%');                
                             
             d3.tsv('data.tsv',type,(error,data)=>{
-    
-                scale.domain([0,d3.max(data,(d)=>{return d.value;})]);
+            ordinal.domain(data.map((d)=>{return d.letter})).padding(0.1);    
+
+            scale.domain([0,d3.max(data,(d)=>{return d.value;})]);
                                           
             let barWidth = width/data.length;
 
-            let bar = chart.selectAll('g')
-                            .data(data).enter()
-                            .append('g')
-                            .attr('transform',(d,i)=>{return 'translate('+i*barWidth+',0)';})
-            bar.append('rect')
-                .attr('y',(d)=>{console.log(scale(d.value));return scale(d.value);})
-                .attr('width',barWidth)
-                .attr('height',(d)=>{return height-scale(d.value);});   
-
-            bar.append('text')
-                .attr('x',barWidth/2)
-                .attr('y',(d)=>{return(scale(d.value)+50);})
-                .attr('dy','.75em')
-                .text((d)=>{return d.letter});    
+            chart.append('g')
+                    .attr('class','axis axis--x')
+                    .attr('transform','translate(0,'+height+')')
+                    .call(xAxis);
+                    
+            chart.append('g')
+                    .attr('class','axis axis--y')
+                    .call(yAxis)
+                    .append('text')
+                    .attr('transform','rotate(-90)')
+                    .attr('y',6)
+                    .attr('dy','0.71em')
+                    .attr('text-anchor','end')
+                    .text('value');        
+            
+             chart.selectAll('.bar')
+                  .data(data).enter()
+                  .append('rect')
+                  .attr('y',(d)=>{return scale(d.value);})
+                  .attr('x',(d)=>{return ordinal(d.letter);})
+                  .attr('width',ordinal.bandwidth())
+                  .attr('height',(d)=>{return height-scale(d.value);});   
             });  
             function type(d){
                 d.value =+d.value
